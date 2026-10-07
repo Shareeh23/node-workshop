@@ -8,15 +8,15 @@ Build a practical understanding of HTTP by implementing servers, routing, reques
 
 ## Exercises
 
-- [ ] Create an HTTP server from scratch
-- [ ] Create a server with multiple routes
-- [ ] Return different responses based on the HTTP method
+- [x] Create an HTTP server from scratch
+- [x] Create a server with multiple routes
+- [x] Return different responses based on the HTTP method
 - [ ] Parse URL query parameters
 - [ ] Parse URL path parameters
-- [ ] Read and parse a JSON request body
-- [ ] Return different HTTP status codes based on the request
+- [x] Read and parse a JSON request body
+- [x] Return different HTTP status codes based on the request
 - [ ] Set custom response headers
-- [ ] Implement a basic JSON API without Express
+- [x] Implement a basic JSON API without Express
 - [ ] Implement a simple request logger
 - [ ] Implement a basic 404 handler
 - [ ] Serve an HTML file using `fs`

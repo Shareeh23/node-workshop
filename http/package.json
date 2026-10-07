@@ -4,7 +4,7 @@
   "description": "Practical exercises for understanding HTTP and implementing HTTP functionality using Node.js core APIs, without relying on Express.",
   "main": "server.ts",
   "scripts": {
-    "dev": "tsx server.ts"
+    "dev": "tsx watch server.ts"
   },
   "keywords": [
     "node",
