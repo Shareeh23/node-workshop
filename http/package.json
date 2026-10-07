@@ -1,0 +1,21 @@
+{
+  "name": "http",
+  "version": "1.0.0",
+  "description": "Practical exercises for understanding HTTP and implementing HTTP functionality using Node.js core APIs, without relying on Express.",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "tsx server.ts"
+  },
+  "keywords": [
+    "node",
+    "http"
+  ],
+  "author": "Mohamed Shareeh",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
