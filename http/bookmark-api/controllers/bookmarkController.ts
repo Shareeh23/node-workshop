@@ -6,6 +6,7 @@ import {
   readBookmarks,
   writeBookmark,
   replaceBookmark,
+  deleteBookmark,
 } from "../storage/bookmarkStorage.js";
 import { buildBookmark } from "../services/bookmarkService.js";
 import { bodyParsing } from "../utils/request.js";
@@ -223,4 +224,54 @@ export async function updateBookmarkHandler(
       );
     }
   });
+}
+
+export async function deleteBookmarkHandler(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  try {
+    const url = new URL(req.url as string, `http://${req.headers.host}`);
+
+    const id = url.pathname.split("/")[2];
+
+    const deleted = await deleteBookmark(id);
+
+    if (!deleted) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify(
+          {
+            message: `Bookmark ${id} doesn't exist`,
+          },
+          null,
+          2,
+        ),
+      );
+      return;
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+
+    res.end(
+      JSON.stringify(
+        {
+          message: `Bookmark ${id} deleted successfully`,
+        },
+        null,
+        2,
+      ),
+    );
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify(
+        {
+          message: "Unexpected error",
+        },
+        null,
+        2,
+      ),
+    );
+  }
 }

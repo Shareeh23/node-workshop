@@ -16,8 +16,8 @@ export async function initStorage() {
 }
 
 export async function readBookmarks() {
-  const contents = await readFile(filePath, { encoding: "utf-8" });
-  return JSON.parse(contents);
+  const bookmarks = await readFile(filePath, { encoding: "utf-8" });
+  return JSON.parse(bookmarks);
 }
 
 export async function readBookmark(id: string): Promise<BookMark | undefined> {
@@ -41,4 +41,18 @@ export async function replaceBookmark(bookmark: BookMark) {
   bookmarks[bookmarkIndex] = bookmark;
 
   await writeFile(filePath, JSON.stringify(bookmarks, null, 2), "utf-8");
+}
+
+export async function deleteBookmark(id: string) {
+  const bookmarks: BookMark[] = await readBookmarks();
+
+  const filteredBookmarks =  bookmarks.filter((bookmark) => bookmark.id !== id);
+  
+  if(filteredBookmarks.length === bookmarks.length) {
+    return false;
+  }
+
+  await writeFile(filePath, JSON.stringify(filteredBookmarks, null, 2), 'utf-8');
+
+  return true;
 }

@@ -6,6 +6,7 @@ import {
   getBookmarkHandler,
   createBookmarkHandler,
   updateBookmarkHandler,
+  deleteBookmarkHandler
 } from "../controllers/bookmarkController.js";
 
 export function handleBookmarkRoutes(
@@ -30,5 +31,9 @@ export function handleBookmarkRoutes(
 
   if (req.method === "PATCH" && req.url?.startsWith("/bookmarks/")) {
     return updateBookmarkHandler(req, res);
+  }
+
+  if(req.method === "DELETE" && req.url?.startsWith("/bookmarks/")) {
+    return deleteBookmarkHandler(req, res);
   }
 }
