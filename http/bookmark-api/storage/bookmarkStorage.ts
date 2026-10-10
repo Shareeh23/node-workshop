@@ -1,7 +1,11 @@
+import { env } from "node:process";
 import { readFile, writeFile } from "node:fs/promises";
 import type { BookMark } from "../types/bookmark.js";
 
-const filePath = new URL("../data.json", import.meta.url);
+const filePath = new URL(
+  env.NODE_ENV === "dev" ? "../test/data.test.json" : "../data.json",
+  import.meta.url,
+);
 
 export async function initStorage() {
   try {
@@ -46,13 +50,17 @@ export async function replaceBookmark(bookmark: BookMark) {
 export async function deleteBookmark(id: string) {
   const bookmarks: BookMark[] = await readBookmarks();
 
-  const filteredBookmarks =  bookmarks.filter((bookmark) => bookmark.id !== id);
-  
-  if(filteredBookmarks.length === bookmarks.length) {
+  const filteredBookmarks = bookmarks.filter((bookmark) => bookmark.id !== id);
+
+  if (filteredBookmarks.length === bookmarks.length) {
     return false;
   }
 
-  await writeFile(filePath, JSON.stringify(filteredBookmarks, null, 2), 'utf-8');
+  await writeFile(
+    filePath,
+    JSON.stringify(filteredBookmarks, null, 2),
+    "utf-8",
+  );
 
   return true;
 }
