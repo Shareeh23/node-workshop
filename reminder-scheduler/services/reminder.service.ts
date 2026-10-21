@@ -9,3 +9,19 @@ export function getAllReminders() {
 export function getReminderById(id: Reminder["id"]) {
   return reminders.find((reminder) => reminder.id === id);
 }
+
+export function createReminder(
+  title: Reminder["title"],
+  scheduledAt: Reminder["scheduledAt"],
+): Reminder {
+  const reminder = {
+    id: crypto.randomUUID(),
+    title,
+    scheduledAt,
+    status: "pending",
+  } satisfies Reminder;
+
+  reminders.push(reminder);
+
+  return reminder;
+}
