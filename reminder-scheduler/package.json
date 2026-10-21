@@ -2,12 +2,16 @@
   "name": "reminder-scheduler",
   "version": "1.0.0",
   "description": "A small Node.js application for managing reminders and practicing event-driven programming.",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch server.ts",
+    "typecheck": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "node",
+    "http",
+    "events"
+  ],
+  "author": "Mohamed Shareeh",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
