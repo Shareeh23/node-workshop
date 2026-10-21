@@ -5,6 +5,7 @@ import sendError from "../utils/send-error.js";
 import {
   getAllRemindersController,
   getReminderByIdController,
+  postReminderController
 } from "../controllers/reminder.controller.js";
 
 export function routeHandler(req: IncomingMessage, res: ServerResponse) {
@@ -21,7 +22,7 @@ export function routeHandler(req: IncomingMessage, res: ServerResponse) {
     return;
   }
 
-  if (req.method === "GET" && req.url == "/reminders") {
+  if (req.method === "GET" && req.url === "/reminders") {
     getAllRemindersController(res);
     return;
   }
@@ -35,6 +36,11 @@ export function routeHandler(req: IncomingMessage, res: ServerResponse) {
     }
 
     sendError(res, 404, "MISSING_ID", "Reminder ID is required");
+    return;
+  }
+
+  if(req.method === "POST" && req.url === "/reminders") {
+    void postReminderController(req, res);
     return;
   }
 
