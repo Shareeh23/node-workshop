@@ -1,0 +1,20 @@
+{
+  "name": "reminder-scheduler",
+  "version": "1.0.0",
+  "description": "A small Node.js application for managing reminders and practicing event-driven programming.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "tsx": "^4.23.15"
+  }
+}
