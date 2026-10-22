@@ -11,6 +11,7 @@ import {
   updateDocument as updateDocumentService,
   deleteDocument as deleteDocumentService,
   uploadDocument as uploadDocumentService,
+  getDocumentContent as getDocumentContentService,
 } from "../services/document.services.js";
 
 import type { CreateDocumentInput } from "../types/document.types.js";
@@ -303,5 +304,45 @@ export async function uploadDocument(
       "INTERNAL_SERVER_ERROR",
       "An unexpected error occurred",
     );
+  }
+}
+
+export async function getDocumentContent(
+  req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const result = await getDocumentContentService(id);
+
+    if (!result) {
+      sendError(res, 404, "NOT_FOUND", "Document not found");
+      return;
+    }
+
+    const { document, stream } = result;
+
+    res.writeHead(200, {
+      "Content-Type": document.mimeType!,
+      "Content-Length": document.size!,
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(document.originalFileName!)}`,
+    });
+
+    stream.on("error", () => {
+      if (!res.headersSent) {
+        sendError(res, 500, "INTERNAL_SERVER_ERROR", "Failed to read document");
+      } else {
+        res.destroy();
+      }
+    });
+
+    stream.pipe(res);
+  } catch (error) {
+    if (error instanceof Error && error.message === "CONTENT_NOT_FOUND") {
+      sendError(res, 404, "CONTENT_NOT_FOUND", "Document content not found");
+      return;
+    }
+
+    sendError(res, 500, "INTERNAL_SERVER_ERROR", "Failed to download document");
   }
 }

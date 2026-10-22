@@ -8,6 +8,7 @@ import {
   updateDocument,
   deleteDocument,
   uploadDocument,
+  getDocumentContent,
 } from "../controllers/document.controllers.js";
 
 import handleNotFound from "../utils/errors.js";
@@ -72,6 +73,18 @@ export default function routeHandler(
     const id = decodeURIComponent(uploadMatch[1] as string);
 
     void uploadDocument(req, res, id);
+    return;
+  }
+
+  // Download document content
+  const downloadMatch = pathname.match(
+    /^\/api\/v1\/documents\/([^/]+)\/content$/,
+  );
+
+  if (downloadMatch && method === "GET") {
+    const id = decodeURIComponent(downloadMatch[1] as string);
+
+    void getDocumentContent(req, res, id);
     return;
   }
 
