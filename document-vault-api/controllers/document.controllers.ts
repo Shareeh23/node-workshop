@@ -4,6 +4,12 @@ import bodyParser from "../utils/body-parser.js";
 import sendJSON from "../utils/send-json.js";
 import sendError from "../utils/send-error.js";
 
+import {
+  createDocument as createDocumentService,
+} from "../services/document.services.js";
+
+import type { CreateDocumentInput } from "../types/document.types.js";
+
 export function getHealth(_req: IncomingMessage, res: ServerResponse) {
   sendJSON(res, 200, { status: "ok" }, "Document Vault API is running");
 }
@@ -15,11 +21,38 @@ export async function createDocument(
   try {
     const body = await bodyParser(req);
 
-    console.log(body);
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      sendError(res, 400, "INVALID_BODY", "Request body must be a JSON object");
+      return;
+    }
 
-    // TODO: Write body to the JSON file.
+    const input = body as Record<string, unknown>;
 
-    sendJSON(res, 200, null, "Document received");
+    if (
+      typeof input.name !== "string" ||
+      !input.name.trim() ||
+      typeof input.description !== "string" ||
+      !Array.isArray(input.tags) ||
+      !input.tags.every((tag) => typeof tag === "string")
+    ) {
+      sendError(
+        res,
+        400,
+        "VALIDATION_ERROR",
+        "Provide a name, description, and an array of string tags",
+      );
+      return;
+    }
+
+    const documentInput: CreateDocumentInput = {
+      name: input.name as string,
+      description: input.description as string,
+      tags: input.tags as string[],
+    };
+
+    const document = await createDocumentService(documentInput);
+
+    sendJSON(res, 201, document, "Document created successfully");
   } catch (err) {
     if (err instanceof SyntaxError) {
       sendError(res, 400, "INVALID_JSON", "Request body is malformed");
@@ -30,8 +63,6 @@ export async function createDocument(
       sendError(res, 400, "EMPTY_BODY", "Request body is required");
       return;
     }
-
-    console.error("Request processing error:", err);
 
     sendError(
       res,
