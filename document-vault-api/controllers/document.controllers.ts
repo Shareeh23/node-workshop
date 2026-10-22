@@ -6,12 +6,29 @@ import sendError from "../utils/send-error.js";
 
 import {
   createDocument as createDocumentService,
+  getDocuments as getDocumentsService,
 } from "../services/document.services.js";
 
 import type { CreateDocumentInput } from "../types/document.types.js";
 
 export function getHealth(_req: IncomingMessage, res: ServerResponse) {
   sendJSON(res, 200, { status: "ok" }, "Document Vault API is running");
+}
+
+export async function getDocuments(_req: IncomingMessage, res: ServerResponse) {
+  try {
+    const documents = await getDocumentsService();
+
+    sendJSON(res, 200, documents, "Documents retrieved successfully");
+  } catch (err) {
+    console.error("Error retrieving documents:", err);
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
 }
 
 export async function createDocument(

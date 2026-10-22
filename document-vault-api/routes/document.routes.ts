@@ -1,21 +1,39 @@
-import { IncomingMessage, ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getHealth, createDocument } from "../controllers/document.controllers.js";
+import {
+  getHealth,
+  createDocument,
+  getDocuments,
+} from "../controllers/document.controllers.js";
+
 import handleNotFound from "../utils/errors.js";
 
-export default function routeHandler(req: IncomingMessage, res: ServerResponse) {
-  if (req.method === "GET" && req.url === "/api/v1/health") {
+export default function routeHandler(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  const method = req.method;
+  const url = new URL(
+    req.url ?? "/",
+    `http://${req.headers.host ?? "localhost"}`,
+  );
+  const pathname = url.pathname;
+
+  // Health check
+  if (method === "GET" && pathname === "/api/v1/health") {
     getHealth(req, res);
     return;
   }
 
-  // if(req.method === "GET" && req.url === "/api/v1/documents") {
-  //   getDocuments(req, res);
-  //   return;
-  // }
-
-  if(req.method === "POST" && req.url === "/api/v1/documents") {
+  // Create a document
+  if (method === "POST" && pathname === "/api/v1/documents") {
     void createDocument(req, res);
+    return;
+  }
+
+  // Retrieve all documents
+  if (method === "GET" && pathname === "/api/v1/documents") {
+    void getDocuments(req, res);
     return;
   }
 
