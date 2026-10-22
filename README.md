@@ -1,74 +1,40 @@
 # Node.js Development
 
-A collection of practical exercises and projects for learning Node.js and
-backend development.
+A collection of practical projects built while learning Node.js and backend development.
 
 ## Objective
 
-Build a strong understanding of Node.js and backend development by learning
-concepts through implementation.
+Develop a strong understanding of Node.js and backend development through hands-on implementation.
 
-The repository covers Node.js fundamentals, backend architecture,
-databases, security, testing, external services, and production concerns.
-
-## Topics
-
-The following topics will be explored throughout the repository.
-
-- [ ] HTTP
-- [ ] Asynchronous & Event-Driven Programming
-- [ ] Express
-- [ ] PostgreSQL
-- [ ] MongoDB
-- [ ] Redis
-- [ ] Authentication
-- [ ] Security
-- [ ] File Uploads & Storage
-- [ ] Testing
-- [ ] External APIs
-- [ ] Background Jobs
-- [ ] WebSockets
-- [ ] Production & Deployment
-
-Additional concepts may be added as they are encountered during development.
+This repository documents my progress as I build applications, explore backend concepts, solve problems, and improve my code.
 
 ## Approach
 
-The repository is developed progressively through implementation.
+Learning is driven by building projects rather than completing isolated, concept-based exercises.
 
-Rather than following a fixed set of exercises, concepts are explored by
-building practical applications and solving problems that arise during
-development.
+Each project provides an opportunity to apply what I've learned, explore unfamiliar concepts, and develop a better understanding of how backend applications work.
 
 The general process is:
 
-1. Learn the fundamentals of a topic.
-2. Implement the concept.
-3. Experiment with the implementation.
-4. Apply it to a practical problem or project.
-5. Test the implementation.
-6. Record important concepts and lessons learned.
-7. Refactor and improve the implementation where appropriate.
-
-## Structure
-
-- `http/` — HTTP and Node.js core APIs
-- `async/` — Asynchronous and event-driven programming
-- `express/` — Express applications and exercises
-- `databases/` — PostgreSQL, MongoDB, and Redis
-- `authentication/` — Authentication and authorization
-- `security/` — Backend security
-- `file-storage/` — File uploads and storage
-- `testing/` — Testing and QA
-- `external-apis/` — Integration with external APIs
-- `background-jobs/` — Background jobs and task processing
-- `websockets/` — Real-time communication with WebSockets
-- `production/` — Production and deployment
+1. Identify the requirements and plan the implementation.
+2. Build the application incrementally.
+3. Explore concepts as they become relevant.
+4. Test the implementation and investigate problems.
+5. Record important takeaways and lessons learned.
+6. Refactor and improve the code where appropriate.
 
 ## Projects
 
-Projects will be added as development progresses.
+Projects are developed progressively, with each having its own directory containing its implementation and relevant documentation.
 
-| Project | Description | Status |
-|---|---|---|
-| — | — | — |
+| Project                                     | Description                                                                                                                                                                                                                                                                                 | Status      |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| [Bookmark API](./bookmark-api/)             | A REST API built with Node.js and TypeScript using core HTTP APIs without Express. Implements bookmark CRUD operations, JSON-file persistence, generated IDs and timestamps, request-body parsing, and HTTP response handling. Additional testing and remaining HTTP exercises are ongoing. | Completed |
+| [Document Vault API](./document-vault-api/) | A document-management REST API built with Node.js and TypeScript without Express. Explores document metadata management, filesystem operations, streamed file uploads and downloads, search, filtering, and automated testing.                                                              | Completed |
+| [Reminder Scheduler](./reminder-scheduler/) | An in-memory reminder management application built with Node.js and TypeScript. Implements reminder CRUD endpoints and explores HTTP handling, with event-driven scheduling, task queues, and retries planned as subsequent development steps.                                              | In Progress |
+
+## Progress
+
+Each project is developed incrementally, with an emphasis on understanding the underlying concepts rather than relying on frameworks or abstractions to handle them automatically.
+
+As the projects evolve, I will document new features, testing practices, implementation decisions, and lessons learned.
