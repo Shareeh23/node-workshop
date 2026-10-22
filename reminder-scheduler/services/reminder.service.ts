@@ -25,3 +25,18 @@ export function createReminder(
 
   return reminder;
 }
+
+export function patchReminder(
+  id: Reminder["id"],
+  title?: Reminder["title"],
+  scheduledAt?: Reminder["scheduledAt"],
+) {
+  const reminder = reminders.find((reminder) => reminder.id === id);
+
+  if (reminder) {
+    if (title) reminder.title = title;
+    if (scheduledAt) reminder.scheduledAt = scheduledAt;
+  }
+
+  return reminder;
+}

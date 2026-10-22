@@ -5,7 +5,7 @@ export type CreateReminderInput = {
   scheduledAt: Reminder["scheduledAt"];
 };
 
-export default function validateBody(
+export default function validatePostBody(
   body: unknown,
 ): body is CreateReminderInput {
   if (typeof body !== "object" || body === null) {
