@@ -1,100 +1,348 @@
-import { IncomingMessage, ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { bodyParsing } from "../utils/bodyParser.js";
+import bodyParser from "../utils/body-parser.js";
+import sendJSON from "../utils/send-json.js";
+import sendError from "../utils/send-error.js";
 
-export function getHealth(req: IncomingMessage, res: ServerResponse) {
-  const response = {
-    status: "ok",
-    message: "Document Vault API is running",
-  };
+import {
+  createDocument as createDocumentService,
+  getDocuments as getDocumentsService,
+  getDocumentById as getDocumentByIdService,
+  updateDocument as updateDocumentService,
+  deleteDocument as deleteDocumentService,
+  uploadDocument as uploadDocumentService,
+  getDocumentContent as getDocumentContentService,
+} from "../services/document.services.js";
 
-  res.writeHead(200, { "content-type": "application/json" });
-  res.end(JSON.stringify(response, null, 2));
+import type { CreateDocumentInput } from "../types/document.types.js";
+
+export function getHealth(_req: IncomingMessage, res: ServerResponse) {
+  sendJSON(res, 200, { status: "ok" }, "Document Vault API is running");
 }
 
-// export function getDocuments(req: IncomingMessage, res: ServerResponse) {
-//   const response = {
-//     data: "",
-//     message: "",
-//   };
+export async function createDocument(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  try {
+    const body = await bodyParser(req);
 
-//   res.writeHead(200, { "content-type": "application/json" });
-//   res.end(JSON.stringify(response, null, 2));
-// }
-
-export function createDocument(req: IncomingMessage, res: ServerResponse) {
-  const chunks: Uint8Array<ArrayBufferLike>[] = [];
-
-  req.on("data", (chunk) => {
-    chunks.push(chunk);
-  });
-
-  req.on("error", (err) => {
-    console.error("Request stream error: ", err);
-
-    if (res.headersSent || res.destroyed) {
-      res.destroy();
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      sendError(res, 400, "INVALID_BODY", "Request body must be a JSON object");
       return;
     }
 
-    res.writeHead(500, { "content-type": "application/json" });
-    res.end(
-      JSON.stringify(
-        {
-          error: true,
-          message: "internal server error",
-        },
-        null,
-        2,
-      ),
-    );
-    return;
-  });
+    const input = body as Record<string, unknown>;
 
-  req.on("end", () => {
-    try {
-      const body = bodyParsing(chunks);
-      console.log(body);
-      // write body to the json file
-
-      res.writeHead(200, { "content-type": "application/json" });
-      res.end(
-        JSON.stringify(
-          {
-            success: true,
-            message: "Document received",
-          },
-          null,
-          2,
-        ),
+    if (
+      typeof input.name !== "string" ||
+      !input.name.trim() ||
+      typeof input.description !== "string" ||
+      !Array.isArray(input.tags) ||
+      !input.tags.every((tag) => typeof tag === "string")
+    ) {
+      sendError(
+        res,
+        400,
+        "VALIDATION_ERROR",
+        "Provide a name, description, and an array of string tags",
       );
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        res.writeHead(400, { "content-type": "application/json" });
-        res.end(
-          JSON.stringify(
-            {
-              error: true,
-              message: "Request body is malformed",
-            },
-            null,
-            2,
-          ),
+      return;
+    }
+
+    const documentInput: CreateDocumentInput = {
+      name: input.name as string,
+      description: input.description as string,
+      tags: input.tags as string[],
+    };
+
+    const document = await createDocumentService(documentInput);
+
+    sendJSON(res, 201, document, "Document created successfully");
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      sendError(res, 400, "INVALID_JSON", "Request body is malformed");
+      return;
+    }
+
+    if (err instanceof Error && err.message === "EMPTY_BODY") {
+      sendError(res, 400, "EMPTY_BODY", "Request body is required");
+      return;
+    }
+
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function getDocuments(_req: IncomingMessage, res: ServerResponse) {
+  try {
+    const documents = await getDocumentsService();
+
+    sendJSON(res, 200, documents, "Documents retrieved successfully");
+  } catch (err) {
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function getDocumentById(
+  _req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const document = await getDocumentByIdService(id);
+
+    if (!document) {
+      sendError(res, 404, "DOCUMENT_NOT_FOUND", "Document not found");
+      return;
+    }
+
+    sendJSON(res, 200, document, "Document retrieved successfully");
+  } catch (err) {
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function updateDocument(
+  req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const body = await bodyParser(req);
+
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      sendError(res, 400, "INVALID_BODY", "Request body must be a JSON object");
+      return;
+    }
+
+    const input = body as Record<string, unknown>;
+    const updates: Partial<CreateDocumentInput> = {};
+
+    if ("name" in input) {
+      if (typeof input.name !== "string" || !input.name.trim()) {
+        sendError(
+          res,
+          400,
+          "VALIDATION_ERROR",
+          "Name must be a non-empty string",
         );
         return;
       }
-
-      res.writeHead(500, { "content-type": "application/json" });
-      res.end(
-        JSON.stringify(
-          {
-            error: true,
-            message: "Internal server error",
-          },
-          null,
-          2,
-        ),
-      );
+      updates.name = input.name;
     }
-  });
+
+    if ("description" in input) {
+      if (typeof input.description !== "string") {
+        sendError(res, 400, "VALIDATION_ERROR", "Description must be a string");
+        return;
+      }
+      updates.description = input.description;
+    }
+
+    if ("tags" in input) {
+      if (
+        !Array.isArray(input.tags) ||
+        !input.tags.every((tag) => typeof tag === "string")
+      ) {
+        sendError(
+          res,
+          400,
+          "VALIDATION_ERROR",
+          "Tags must be an array of strings",
+        );
+        return;
+      }
+      updates.tags = input.tags;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      sendError(res, 400, "VALIDATION_ERROR", "No supported fields provided");
+      return;
+    }
+
+    const document = await updateDocumentService(id, updates);
+
+    if (!document) {
+      sendError(res, 404, "DOCUMENT_NOT_FOUND", "Document not found");
+      return;
+    }
+
+    sendJSON(res, 200, document, "Document updated successfully");
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      sendError(res, 400, "INVALID_JSON", "Request body is malformed");
+      return;
+    }
+
+    if (err instanceof Error && err.message === "EMPTY_BODY") {
+      sendError(res, 400, "EMPTY_BODY", "Request body is required");
+      return;
+    }
+
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function deleteDocument(
+  _req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const deleted = await deleteDocumentService(id);
+
+    if (!deleted) {
+      sendError(res, 404, "DOCUMENT_NOT_FOUND", "Document not found");
+      return;
+    }
+
+    res.writeHead(204);
+    res.end();
+  } catch (err) {
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function uploadDocument(
+  req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const originalFileName = req.headers["x-file-name"];
+    const mimeType = req.headers["content-type"];
+
+    if (typeof originalFileName !== "string" || typeof mimeType !== "string") {
+      sendError(
+        res,
+        400,
+        "MISSING_HEADERS",
+        "X-File-Name and Content-Type headers are required",
+      );
+      return;
+    }
+
+    const document = await uploadDocumentService(
+      id,
+      originalFileName,
+      mimeType,
+      req,
+    );
+
+    if (!document) {
+      sendError(res, 404, "DOCUMENT_NOT_FOUND", "Document not found");
+      return;
+    }
+
+    sendJSON(
+      res,
+      200,
+      {
+        id: document.id,
+        originalFileName: document.originalFileName,
+        mimeType: document.mimeType,
+        size: document.size,
+      },
+      "File uploaded successfully",
+    );
+  } catch (err) {
+    if (err instanceof Error) {
+      switch (err.message) {
+        case "INVALID_FILENAME":
+          sendError(
+            res,
+            400,
+            "INVALID_FILENAME",
+            "A valid filename is required",
+          );
+          return;
+
+        case "UNSUPPORTED_FILE_TYPE":
+          sendError(
+            res,
+            415,
+            "UNSUPPORTED_FILE_TYPE",
+            "File type is not supported",
+          );
+          return;
+
+        case "FILE_TOO_LARGE":
+          sendError(res, 413, "FILE_TOO_LARGE", "File exceeds the 10 MB limit");
+          return;
+      }
+    }
+
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function getDocumentContent(
+  req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const result = await getDocumentContentService(id);
+
+    if (!result) {
+      sendError(res, 404, "NOT_FOUND", "Document not found");
+      return;
+    }
+
+    const { document, stream } = result;
+
+    res.writeHead(200, {
+      "Content-Type": document.mimeType!,
+      "Content-Length": document.size!,
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(document.originalFileName!)}`,
+    });
+
+    stream.on("error", () => {
+      if (!res.headersSent) {
+        sendError(res, 500, "INTERNAL_SERVER_ERROR", "Failed to read document");
+      } else {
+        res.destroy();
+      }
+    });
+
+    stream.pipe(res);
+  } catch (error) {
+    if (error instanceof Error && error.message === "CONTENT_NOT_FOUND") {
+      sendError(res, 404, "CONTENT_NOT_FOUND", "Document content not found");
+      return;
+    }
+
+    sendError(res, 500, "INTERNAL_SERVER_ERROR", "Failed to download document");
+  }
 }
