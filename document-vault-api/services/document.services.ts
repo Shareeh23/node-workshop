@@ -1,16 +1,20 @@
 import { randomUUID } from "node:crypto";
-import { createWriteStream } from "node:fs";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { createWriteStream, createReadStream } from "node:fs";
+import {
+  mkdir,
+  readFile,
+  rename,
+  rm,
+  writeFile,
+  access,
+} from "node:fs/promises";
 import { resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import type { Document, CreateDocumentInput } from "../types/document.types.js";
 
-const STORAGE_PATH = resolve(
-  import.meta.dirname,
-  "../storage/metadata.json",
-);
+const STORAGE_PATH = resolve(import.meta.dirname, "../storage/metadata.json");
 const FILES_PATH = resolve(import.meta.dirname, "../storage/metadata.json");
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -184,4 +188,39 @@ export async function uploadDocument(
     await rm(temporaryPath, { force: true }).catch(() => {});
     throw err;
   }
+}
+
+export async function getDocumentContent(id: string) {
+  const documents = await readDocuments();
+
+  const document = documents.find((item) => item.id === id);
+
+  if (!document) {
+    return undefined;
+  }
+
+  if (
+    !document.originalFileName ||
+    !document.mimeType ||
+    document.size === null
+  ) {
+    throw new Error("CONTENT_NOT_FOUND");
+  }
+
+  const filePath = resolve(FILES_PATH, `${document.id}.upload`);
+
+  try {
+    await access(filePath);
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      throw new Error("CONTENT_NOT_FOUND");
+    }
+
+    throw error;
+  }
+
+  return {
+    document,
+    stream: createReadStream(filePath),
+  };
 }
