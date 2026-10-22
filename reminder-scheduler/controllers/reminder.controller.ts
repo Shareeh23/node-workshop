@@ -3,10 +3,11 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import type { Reminder } from "../types/reminder.js";
 
 import {
-  createReminder,
   getAllReminders,
   getReminderById,
+  createReminder,
   patchReminder,
+  deleteReminder,
 } from "../services/reminder.service.js";
 import sendJSON from "../utils/send-json.js";
 import sendError from "../utils/send-error.js";
@@ -138,6 +139,29 @@ export async function patchReminderController(
       return;
     }
 
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export function deleteReminderController(
+  res: ServerResponse,
+  id: Reminder["id"],
+) {
+  try {
+    const reminder = deleteReminder(id);
+
+    if (!reminder) {
+      sendError(res, 404, "NOT_FOUND", "Reminder not found");
+      return;
+    }
+
+    sendJSON(res, 200, reminder, "Reminder deleted successfully");
+  } catch {
     sendError(
       res,
       500,

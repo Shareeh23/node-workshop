@@ -7,6 +7,7 @@ import {
   getReminderByIdController,
   postReminderController,
   patchReminderController,
+  deleteReminderController
 } from "../controllers/reminder.controller.js";
 
 export function routeHandler(req: IncomingMessage, res: ServerResponse) {
@@ -50,6 +51,18 @@ export function routeHandler(req: IncomingMessage, res: ServerResponse) {
 
     if (id) {
       void patchReminderController(req, res, id);
+      return;
+    }
+
+    sendError(res, 404, "MISSING_ID", "Reminder ID is required");
+    return;
+  }
+
+  if (req.method === "DELETE" && req.url?.startsWith("/reminders/")) {
+    const id = req.url.split("/")[2];
+
+    if (id) {
+      deleteReminderController(res, id);
       return;
     }
 

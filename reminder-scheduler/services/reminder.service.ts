@@ -40,3 +40,13 @@ export function patchReminder(
 
   return reminder;
 }
+
+export function deleteReminder(id: Reminder["id"]) {
+  const index = reminders.findIndex((reminder) => reminder.id === id);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  return reminders.splice(index, 1)[0];
+}
