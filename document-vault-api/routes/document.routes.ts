@@ -4,6 +4,9 @@ import {
   getHealth,
   createDocument,
   getDocuments,
+  getDocumentById,
+  updateDocument,
+  deleteDocument,
 } from "../controllers/document.controllers.js";
 
 import handleNotFound from "../utils/errors.js";
@@ -35,6 +38,28 @@ export default function routeHandler(
   if (method === "GET" && pathname === "/api/v1/documents") {
     void getDocuments(req, res);
     return;
+  }
+
+  // Match individual document routes
+  const documentMatch = pathname.match(/^\/api\/v1\/documents\/([^/]+)$/);
+
+  if (documentMatch) {
+    const id = decodeURIComponent(documentMatch[1] as string);
+
+    if (method === "GET") {
+      void getDocumentById(req, res, id);
+      return;
+    }
+
+    if (method === "PATCH") {
+      void updateDocument(req, res, id);
+      return;
+    }
+
+    if (method === "DELETE") {
+      void deleteDocument(req, res, id);
+      return;
+    }
   }
 
   handleNotFound(req, res);
