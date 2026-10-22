@@ -15,7 +15,7 @@ export default function routeHandler(req: IncomingMessage, res: ServerResponse) 
   // }
 
   if(req.method === "POST" && req.url === "/api/v1/documents") {
-    createDocument(req, res);
+    void createDocument(req, res);
     return;
   }
 

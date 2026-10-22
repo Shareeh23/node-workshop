@@ -9,9 +9,9 @@ import type { Document, CreateDocumentInput } from "../types/document.types.js";
 
 const STORAGE_PATH = resolve(
   import.meta.dirname,
-  "../../storage/metadata.json",
+  "../storage/metadata.json",
 );
-const FILES_PATH = resolve(import.meta.dirname, "../../storage/documents");
+const FILES_PATH = resolve(import.meta.dirname, "../storage/metadata.json");
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
