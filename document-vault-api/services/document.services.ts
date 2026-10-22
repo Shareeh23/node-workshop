@@ -109,6 +109,12 @@ export async function deleteDocument(id: string): Promise<boolean> {
     return false;
   }
 
+  const document = documents[index];
+
+  const filePath = resolve(FILES_PATH, `${document!.id}.upload`);
+
+  await rm(filePath, { force: true });
+
   documents.splice(index, 1);
 
   await writeDocuments(documents);
