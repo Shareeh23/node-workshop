@@ -69,7 +69,6 @@ export async function createDocument(
       return;
     }
 
-    console.error("Error creating document:", err);
     sendError(
       res,
       500,
@@ -85,7 +84,6 @@ export async function getDocuments(_req: IncomingMessage, res: ServerResponse) {
 
     sendJSON(res, 200, documents, "Documents retrieved successfully");
   } catch (err) {
-    console.error("Error retrieving documents:", err);
     sendError(
       res,
       500,
@@ -110,7 +108,6 @@ export async function getDocumentById(
 
     sendJSON(res, 200, document, "Document retrieved successfully");
   } catch (err) {
-    console.error("Error retrieving document:", err);
     sendError(
       res,
       500,
@@ -197,7 +194,6 @@ export async function updateDocument(
       return;
     }
 
-    console.error("Error updating document:", err);
     sendError(
       res,
       500,
@@ -223,7 +219,84 @@ export async function deleteDocument(
     res.writeHead(204);
     res.end();
   } catch (err) {
-    console.error("Error deleting document:", err);
+    sendError(
+      res,
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "An unexpected error occurred",
+    );
+  }
+}
+
+export async function uploadDocument(
+  req: IncomingMessage,
+  res: ServerResponse,
+  id: string,
+) {
+  try {
+    const originalFileName = req.headers["x-file-name"];
+    const mimeType = req.headers["content-type"];
+
+    if (typeof originalFileName !== "string" || typeof mimeType !== "string") {
+      sendError(
+        res,
+        400,
+        "MISSING_HEADERS",
+        "X-File-Name and Content-Type headers are required",
+      );
+      return;
+    }
+
+    const document = await uploadDocumentService(
+      id,
+      originalFileName,
+      mimeType,
+      req,
+    );
+
+    if (!document) {
+      sendError(res, 404, "DOCUMENT_NOT_FOUND", "Document not found");
+      return;
+    }
+
+    sendJSON(
+      res,
+      200,
+      {
+        id: document.id,
+        originalFileName: document.originalFileName,
+        mimeType: document.mimeType,
+        size: document.size,
+      },
+      "File uploaded successfully",
+    );
+  } catch (err) {
+    if (err instanceof Error) {
+      switch (err.message) {
+        case "INVALID_FILENAME":
+          sendError(
+            res,
+            400,
+            "INVALID_FILENAME",
+            "A valid filename is required",
+          );
+          return;
+
+        case "UNSUPPORTED_FILE_TYPE":
+          sendError(
+            res,
+            415,
+            "UNSUPPORTED_FILE_TYPE",
+            "File type is not supported",
+          );
+          return;
+
+        case "FILE_TOO_LARGE":
+          sendError(res, 413, "FILE_TOO_LARGE", "File exceeds the 10 MB limit");
+          return;
+      }
+    }
+
     sendError(
       res,
       500,

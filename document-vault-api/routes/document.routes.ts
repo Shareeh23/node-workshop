@@ -7,6 +7,7 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument,
+  uploadDocument,
 } from "../controllers/document.controllers.js";
 
 import handleNotFound from "../utils/errors.js";
@@ -60,6 +61,18 @@ export default function routeHandler(
       void deleteDocument(req, res, id);
       return;
     }
+  }
+
+  // Upload document content
+  const uploadMatch = pathname.match(
+    /^\/api\/v1\/documents\/([^/]+)\/content$/,
+  );
+
+  if (uploadMatch && method === "PUT") {
+    const id = decodeURIComponent(uploadMatch[1] as string);
+
+    void uploadDocument(req, res, id);
+    return;
   }
 
   handleNotFound(req, res);
